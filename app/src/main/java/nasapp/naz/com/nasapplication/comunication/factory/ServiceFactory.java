@@ -5,6 +5,8 @@ import android.text.TextUtils;
 
 import java.io.IOException;
 
+import nasapp.naz.com.nasapplication.comunication.configuration.EndPoints;
+import nasapp.naz.com.nasapplication.comunication.configuration.ServiceConfiguration;
 import nasapp.naz.com.nasapplication.comunication.interceptors.AuthInterceptor;
 import nasapp.naz.com.nasapplication.comunication.model.AuthResponse;
 import nasapp.naz.com.nasapplication.utils.AirbanqPreferencesInfo;
@@ -65,7 +67,7 @@ public final class ServiceFactory {
 
     public static ServiceFactory singleton() {
         if (singleton == null) {
-            throw new IllegalStateException("Must Initialize ExceptionHandlerListener before using singleton()");
+            throw new IllegalStateException("Must Initialize ServiceFactory before using singleton()");
         } else {
             return singleton;
         }
@@ -96,14 +98,6 @@ public final class ServiceFactory {
         return createService(new ServiceConfiguration.ServiceConfigurationBuilder().useAuth(false).build(), serviceClass);
     }
 
-    public Retrofit createRetroWithToken() {
-        return new Retrofit.Builder()
-                .baseUrl(EndPoints.API_BASE_URL)
-                .addConverterFactory(JacksonConverterFactory.create())
-                // .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                .build();
-    }
-
     private OkHttpClient getOkHttpClient(boolean useAuth) {
         if (useAuth) {
             if(authInterceptor != null) {
@@ -122,13 +116,13 @@ public final class ServiceFactory {
 
     private void checkTokenExpiration() {
 
-
     }
 
     public void saveAccessToken(AuthResponse response) {
         this.response = response;
         try {
             AirbanqPreferencesInfo.singleton().setPreference(Constants.AUTH_RESPONSE, JacksonMapper.mapToString(response));
+            authInterceptor.updateAccessToken(response.getAccessToken());
         } catch (IOException e) {
             e.printStackTrace();
         }

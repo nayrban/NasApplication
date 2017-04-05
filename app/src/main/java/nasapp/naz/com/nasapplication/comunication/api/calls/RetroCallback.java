@@ -10,6 +10,13 @@ import retrofit2.Response;
 
 public abstract class RetroCallback<T> implements Callback<T> {
 
+    private int retryCount = 0;
+    private int totalRetries = 3;
+
+    public RetroCallback(){
+
+    }
+
     @Override
     public final void onResponse(Call<T> call, Response<T> response) {
         if (!response.isSuccessful()) {
@@ -31,5 +38,9 @@ public abstract class RetroCallback<T> implements Callback<T> {
 
     private ErrorInfo parseError(Response<T> response){
         return  ErrorHandler.handleError(response);
+    }
+
+    private void retry(Call<T> call) {
+        call.clone().enqueue(this);
     }
 }
